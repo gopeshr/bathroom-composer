@@ -3,7 +3,7 @@ import { Volume2, VolumeX, Trash2, Headphones } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import type { InstrumentType } from '../store/useStore';
 
-const INSTRUMENTS: InstrumentType[] = ['piano', 'drums', 'guitar', 'flute', 'violin'];
+const INSTRUMENTS: InstrumentType[] = ['piano', 'drums', 'guitar', 'flute', 'violin', 'bass', 'synth', 'choir', 'sax', 'trumpet', 'marimba'];
 
 export const TrackList: React.FC = () => {
   const tracks = useStore(state => state.tracks);

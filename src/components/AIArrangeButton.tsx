@@ -10,6 +10,12 @@ const INSTRUMENT_COLORS: Record<InstrumentType, string> = {
   guitar: '#eab308',
   flute: '#10b981',
   violin: '#8b5cf6',
+  bass: '#f97316',
+  synth: '#ec4899',
+  choir: '#0ea5e9',
+  sax: '#d946ef',
+  trumpet: '#eab308',
+  marimba: '#14b8a6'
 };
 
 export const AIArrangeButton: React.FC = () => {
@@ -21,18 +27,10 @@ export const AIArrangeButton: React.FC = () => {
 
   const handleArrange = async () => {
     if (tracks.length === 0) return;
-    
-    // Use the first track as the lead melody
-    const leadTrack = tracks[0];
-    
-    if (leadTrack.notes.length === 0) {
-      alert("The lead track has no notes. Hum something first!");
-      return;
-    }
 
     setIsGenerating(true);
     try {
-      const generatedTracks = await generateArrangement(leadTrack.notes, genre);
+      const generatedTracks = await generateArrangement(tracks, genre);
       
       generatedTracks.forEach((t, i) => {
         addTrack({

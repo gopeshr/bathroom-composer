@@ -61,22 +61,10 @@ export class AudioRecorder {
           this.analyser?.disconnect();
 
           // Resample to 22050 Hz, mono for basic-pitch
-          const offlineCtx = new (window.OfflineAudioContext || (window as any).webkitOfflineAudioContext)(
-            1, // mono
-            Math.max(1, Math.ceil(audioBuffer.duration * 22050)),
-            22050
-          );
-          
-          const source = offlineCtx.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(offlineCtx.destination);
-          source.start();
-          
-          const resampledBuffer = await offlineCtx.startRendering();
-          
+          const resampledBuffer = await resampleAudioBuffer(audioBuffer);
           resolve(resampledBuffer);
         } catch (error) {
-          reject(error);
+           reject(error);
         }
       };
 
@@ -84,3 +72,18 @@ export class AudioRecorder {
     });
   }
 }
+
+export const resampleAudioBuffer = async (audioBuffer: AudioBuffer): Promise<AudioBuffer> => {
+  const offlineCtx = new (window.OfflineAudioContext || (window as any).webkitOfflineAudioContext)(
+    1, // mono
+    Math.max(1, Math.ceil(audioBuffer.duration * 22050)),
+    22050
+  );
+  
+  const source = offlineCtx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(offlineCtx.destination);
+  source.start();
+  
+  return offlineCtx.startRendering();
+};

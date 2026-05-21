@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type InstrumentType = 'piano' | 'drums' | 'guitar' | 'flute' | 'violin';
+export type InstrumentType = 'piano' | 'drums' | 'guitar' | 'flute' | 'violin' | 'bass' | 'synth' | 'choir' | 'sax' | 'trumpet' | 'marimba';
 
 export interface NoteEvent {
   pitch: number;      // MIDI pitch

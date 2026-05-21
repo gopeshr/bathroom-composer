@@ -7,7 +7,13 @@ const instrumentMap: Record<InstrumentType, string> = {
   drums: 'synth_drum',
   guitar: 'acoustic_guitar_steel',
   flute: 'flute',
-  violin: 'violin'
+  violin: 'violin',
+  bass: 'electric_bass_finger',
+  synth: 'lead_2_sawtooth',
+  choir: 'choir_aahs',
+  sax: 'alto_sax',
+  trumpet: 'trumpet',
+  marimba: 'marimba'
 };
 
 class SynthEngine {
