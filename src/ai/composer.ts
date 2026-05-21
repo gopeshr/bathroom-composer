@@ -1,0 +1,83 @@
+import { GoogleGenAI, Type } from '@google/genai';
+import type { Note, InstrumentType } from '../store/useStore';
+
+const responseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    tracks: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          instrument: {
+            type: Type.STRING,
+            enum: ['piano', 'drums', 'guitar', 'flute', 'violin'],
+            description: 'The instrument for this track'
+          },
+          notes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                pitch: { type: Type.INTEGER, description: 'MIDI pitch (0-127)' },
+                startTime: { type: Type.NUMBER, description: 'Start time in seconds' },
+                duration: { type: Type.NUMBER, description: 'Duration in seconds' },
+                velocity: { type: Type.INTEGER, description: 'Note velocity (0-127)' }
+              },
+              required: ['pitch', 'startTime', 'duration', 'velocity']
+            }
+          }
+        },
+        required: ['instrument', 'notes']
+      }
+    }
+  },
+  required: ['tracks']
+};
+
+export const generateArrangement = async (leadNotes: Note[]): Promise<{ instrument: InstrumentType, notes: Note[] }[]> => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('VITE_GEMINI_API_KEY is not set in your .env.local file.');
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
+  const prompt = `
+You are an expert music producer and arranger.
+I am providing you with a lead melody consisting of a sequence of MIDI notes (pitch, startTime in seconds, duration in seconds, and velocity).
+
+Your task is to generate a full musical arrangement to accompany this melody.
+Create 3 additional tracks:
+1. A bassline (instrument: 'guitar' or 'piano' playing low notes, e.g., MIDI pitches 30-45).
+2. A chord progression (instrument: 'piano' or 'guitar' playing chords).
+3. A drum beat (instrument: 'drums'. Use standard MIDI drum pitches: 36/38 for Kick, 38/40 for Snare, 42/46 for Hi-hat).
+
+Make sure the arrangement is musically coherent, in the same key, and perfectly synchronized with the lead melody's timing.
+Return ONLY valid JSON that matches the provided schema.
+
+Lead Melody Notes:
+${JSON.stringify(leadNotes, null, 2)}
+`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: responseSchema,
+        temperature: 0.5,
+      }
+    });
+
+    if (response.text) {
+      const data = JSON.parse(response.text);
+      return data.tracks as { instrument: InstrumentType, notes: Note[] }[];
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to generate arrangement:', error);
+    throw error;
+  }
+};
