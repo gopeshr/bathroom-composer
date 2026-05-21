@@ -10,7 +10,7 @@ function App() {
       {/* Header */}
       <header className="mb-12 text-center">
         <h1 className="text-5xl font-black mb-4 tracking-tight">
-          <span className="text-gradient">Hum</span> Composer
+          <span className="text-gradient">Bathroom</span> Composer
         </h1>
         <p className="text-slate-400 text-lg">Turn your voice into a full arrangement instantly.</p>
       </header>

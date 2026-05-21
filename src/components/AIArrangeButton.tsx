@@ -17,6 +17,8 @@ export const AIArrangeButton: React.FC = () => {
   const addTrack = useStore(state => state.addTrack);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const [genre, setGenre] = useState('');
+
   const handleArrange = async () => {
     if (tracks.length === 0) return;
     
@@ -30,7 +32,7 @@ export const AIArrangeButton: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const generatedTracks = await generateArrangement(leadTrack.notes);
+      const generatedTracks = await generateArrangement(leadTrack.notes, genre);
       
       generatedTracks.forEach((t, i) => {
         addTrack({
@@ -55,17 +57,27 @@ export const AIArrangeButton: React.FC = () => {
   if (tracks.length === 0) return null;
 
   return (
-    <button
-      onClick={handleArrange}
-      disabled={isGenerating}
-      className="glass-button px-4 py-2 flex items-center gap-2 text-sm font-semibold text-accent-pink hover:text-white transition-colors"
-    >
-      {isGenerating ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Sparkles className="w-4 h-4" />
-      )}
-      {isGenerating ? "AI Composing..." : "Auto-Arrange with AI"}
-    </button>
+    <div className="flex items-center gap-2">
+      <input
+        type="text"
+        placeholder="Genre/Vibe (e.g. Lo-Fi, Jazz)"
+        value={genre}
+        onChange={(e) => setGenre(e.target.value)}
+        disabled={isGenerating}
+        className="glass-panel px-3 py-2 text-sm bg-transparent border-none outline-none focus:ring-1 focus:ring-accent-pink/50 rounded-lg placeholder:text-slate-500 min-w-[200px]"
+      />
+      <button
+        onClick={handleArrange}
+        disabled={isGenerating}
+        className="glass-button px-4 py-2 flex items-center gap-2 text-sm font-semibold text-accent-pink hover:text-white transition-colors"
+      >
+        {isGenerating ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Sparkles className="w-4 h-4" />
+        )}
+        {isGenerating ? "AI Composing..." : "Auto-Arrange with AI"}
+      </button>
+    </div>
   );
 };
