@@ -39,7 +39,7 @@ const responseSchema = {
   required: ['analysis', 'tracks']
 };
 
-export const generateArrangement = async (existingTracks: any[], genre?: string): Promise<{ instrument: InstrumentType, notes: NoteEvent[] }[]> => {
+export const generateArrangement = async (existingTracks: any[], genre?: string, complexity: number = 3): Promise<{ instrument: InstrumentType, notes: NoteEvent[] }[]> => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('VITE_GEMINI_API_KEY is not set in your .env.local file.');
@@ -48,6 +48,15 @@ export const generateArrangement = async (existingTracks: any[], genre?: string)
   const ai = new GoogleGenAI({ apiKey });
 
   const genreInstruction = genre ? `\nCompose this arrangement in the style of: ${genre}.` : '';
+  
+  let complexityInstruction = '';
+  switch(complexity) {
+    case 1: complexityInstruction = "COMPLEXITY (1/5): Extremely sparse, minimal, and acoustic. Use very few notes, leave lots of empty space. Create a stripped-down, raw feeling."; break;
+    case 2: complexityInstruction = "COMPLEXITY (2/5): Simple, relaxed arrangement. Focus on the core groove without overcomplicating it."; break;
+    case 3: complexityInstruction = "COMPLEXITY (3/5): Standard, balanced arrangement. A good mix of rhythm and harmony."; break;
+    case 4: complexityInstruction = "COMPLEXITY (4/5): Dense and energetic arrangement. Use more complex chord voicings and faster rhythmic subdivisions."; break;
+    case 5: complexityInstruction = "COMPLEXITY (5/5): Massive, epic, and highly complex. Orchestral or heavily layered electronic. Fill the sonic spectrum with fast rhythms, sweeping arpeggios, and dense harmonies."; break;
+  }
 
   const prompt = `
 You are an expert, multi-platinum music producer and arranger.
@@ -55,6 +64,7 @@ I am providing you with the current state of a musical project. It consists of a
 
 Your task is to generate a pristine, professional musical arrangement based on this raw input.
 ${genreInstruction}
+${complexityInstruction}
 
 First, analyze the existing tracks in the "analysis" field. Determine the likely musical key, the implied tempo (BPM), the rhythmic motifs, and the overall mood based on ALL the provided tracks. 
 
@@ -72,7 +82,9 @@ A chord progression ('piano', 'guitar', 'synth', or 'choir' playing chords). The
 Track 4: DRUMS or COUNTER-MELODY (Call and Response)
 Either a drum beat ('drums' using standard MIDI pitches: 36 Kick, 38 Snare, 42 Closed Hat, 46 Open Hat) where the kick locks with the bass... OR a counter-melody instrument. If you choose a counter-melody, it MUST perform "Call and Response". When the Cleaned Lead pauses or holds a long note, this track plays a quick lick to fill the space.
 
-Crucially, humanize the performance. Vary the 'velocity' of the notes to create groove and dynamics. 
+CRITICAL INSTRUCTION - DYNAMIC VELOCITY MAPPING:
+You MUST strictly mirror the velocities (volume/amplitude) of the user's input tracks in your generated notes. If the user hummed softly (low velocity, e.g., 30-50) at a certain timestamp and swelled to a loud note (high velocity, e.g., 100-127), your arrangement MUST follow that exact dynamic envelope at that exact timestamp. Never use a flat velocity of 100 for all notes. Follow the emotional dynamics of the raw hum exactly.
+
 Return ONLY valid JSON that matches the provided schema.
 
 Existing Tracks Data (Raw User Input):

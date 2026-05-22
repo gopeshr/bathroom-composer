@@ -5,7 +5,7 @@ import { synthEngine } from '../audio/synth';
 import * as Tone from 'tone';
 import MidiWriter from 'midi-writer-js';
 // @ts-ignore
-import lamejs from 'lamejs';
+import * as lamejs from '@breezystack/lamejs';
 
 export const PlaybackControls: React.FC = () => {
   const tracks = useStore(state => state.tracks);
