@@ -20,6 +20,7 @@ const INSTRUMENT_COLORS: Record<InstrumentType, string> = {
 
 export const AIArrangeButton: React.FC = () => {
   const tracks = useStore(state => state.tracks);
+  const updateTrack = useStore(state => state.updateTrack);
   const addTrack = useStore(state => state.addTrack);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -32,9 +33,14 @@ export const AIArrangeButton: React.FC = () => {
     try {
       const generatedTracks = await generateArrangement(tracks, genre);
       
+      // Mute the raw original user tracks so they only hear the perfected AI arrangement
+      tracks.forEach(track => {
+        updateTrack(track.id, { muted: true });
+      });
+
       generatedTracks.forEach((t, i) => {
         addTrack({
-          name: `AI ${t.instrument.charAt(0).toUpperCase() + t.instrument.slice(1)}`,
+          name: i === 0 ? `Cleaned Lead (${t.instrument})` : `AI ${t.instrument.charAt(0).toUpperCase() + t.instrument.slice(1)}`,
           instrument: t.instrument,
           notes: t.notes,
           muted: false,

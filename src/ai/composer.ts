@@ -51,27 +51,31 @@ export const generateArrangement = async (existingTracks: any[], genre?: string)
 
   const prompt = `
 You are an expert, multi-platinum music producer and arranger.
-I am providing you with the current state of a musical project. It consists of an array of tracks, where each track has an instrument and a sequence of MIDI notes.
+I am providing you with the current state of a musical project. It consists of an array of tracks, where each track has an instrument and a sequence of MIDI notes. These notes are usually a raw, unquantized, and slightly messy vocal hum from the user.
 
-Your task is to generate additional musical tracks to complement and arrange this project.
+Your task is to generate a pristine, professional musical arrangement based on this raw input.
 ${genreInstruction}
 
-First, analyze the existing tracks in the "analysis" field. Determine the likely musical key, the implied tempo (BPM), and the overall mood based on ALL the provided tracks. Then, compose new tracks based on that analysis to build out the arrangement.
+First, analyze the existing tracks in the "analysis" field. Determine the likely musical key, the implied tempo (BPM), the rhythmic motifs, and the overall mood based on ALL the provided tracks. 
 
-Create exactly 3 additional tracks from this list of available instruments: 'piano', 'drums', 'guitar', 'flute', 'violin', 'bass', 'synth', 'choir', 'sax', 'trumpet', 'marimba'.
+Then, you MUST generate exactly 4 new tracks to build the arrangement. The instruments must be chosen from: 'piano', 'drums', 'guitar', 'flute', 'violin', 'bass', 'synth', 'choir', 'sax', 'trumpet', 'marimba'.
 
-1. A bassline (instrument: 'bass' or 'synth' playing low notes).
-2. A chord progression (instrument: 'piano', 'guitar', 'synth', or 'choir' playing chords).
-3. A drum beat (instrument: 'drums'. Use standard MIDI drum pitches: 36 for Kick, 38 for Snare, 42 for Closed Hi-hat, 46 for Open Hi-hat).
-Or, you can use other melodic instruments ('flute', 'violin', 'sax', 'trumpet', 'marimba') to provide counter-melodies or textural layers instead of the strict bass/chords/drums format, if it fits the requested genre better.
+Track 1: THE CLEANED LEAD
+The user's raw hum is messy. Your first track must be a "Cleaned Lead" (e.g., using 'synth', 'sax', 'flute', 'trumpet', or 'marimba'). This track must play the exact melody the user intended to hum, but mathematically quantized to the beat and perfectly pitch-corrected to the key. This is the most important track.
 
-Crucially, humanize the performance. Vary the 'velocity' of the notes to create groove and dynamics. For example, emphasize the downbeats, use softer 'ghost notes' on the snare, and give the piano chords a natural dynamic arc.
+Track 2: BASS (Melodic Mirroring)
+A bassline ('bass' or 'synth' playing low notes). The bassline MUST groove-lock with the user's melody. It should mirror the primary rhythmic motifs of the Cleaned Lead, providing a strong foundation that feels custom-tailored to the user's specific vocal rhythms.
 
-Ensure structural synergy. The bassline rhythm MUST lock in tightly with the kick drum pattern. The chord progression should provide a rhythmic counterpoint to the existing melodies without clashing harmonically.
+Track 3: CHORDS
+A chord progression ('piano', 'guitar', 'synth', or 'choir' playing chords). The chord changes should happen exactly on the accented notes of the user's hum, providing harmonic glue.
 
-Make sure the arrangement is perfectly synchronized with the existing tracks' timing. Return ONLY valid JSON that matches the provided schema.
+Track 4: DRUMS or COUNTER-MELODY (Call and Response)
+Either a drum beat ('drums' using standard MIDI pitches: 36 Kick, 38 Snare, 42 Closed Hat, 46 Open Hat) where the kick locks with the bass... OR a counter-melody instrument. If you choose a counter-melody, it MUST perform "Call and Response". When the Cleaned Lead pauses or holds a long note, this track plays a quick lick to fill the space.
 
-Existing Tracks Data:
+Crucially, humanize the performance. Vary the 'velocity' of the notes to create groove and dynamics. 
+Return ONLY valid JSON that matches the provided schema.
+
+Existing Tracks Data (Raw User Input):
 ${JSON.stringify(existingTracks.map(t => ({ instrument: t.instrument, notes: t.notes })), null, 2)}
 `;
 

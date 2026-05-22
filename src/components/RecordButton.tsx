@@ -80,6 +80,7 @@ export const RecordButton: React.FC = () => {
       // Stop recording
       setIsRecording(false);
       setAnalyser(null);
+      setIsProcessing(true);
       try {
         const audioBuffer = await recorderRef.current!.stopRecording();
         await processAudioBuffer(audioBuffer);
@@ -105,6 +106,7 @@ export const RecordButton: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsProcessing(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
