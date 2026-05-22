@@ -2,6 +2,8 @@
 
 A React, TypeScript, and Vite-based web application that transcribes hummed vocal melodies into MIDI sequences, and automatically synthesizes a full multi-track arrangement using the Google Gemini API.
 
+![Bathroom Composer Interface](image.png)
+
 ## Core Features
 
 - **Audio Transcription**: Captures live microphone input and translates audio frequencies into discrete MIDI notes utilizing `@spotify/basic-pitch`.

@@ -65,6 +65,63 @@ class SynthEngine {
       if (inst.stop) inst.stop();
     });
   }
+
+  async renderTracksOffline(tracks: Track[], onProgress?: (p: number) => void): Promise<AudioBuffer> {
+    let maxDuration = 0;
+    const hasSolo = tracks.some(t => t.solo);
+    
+    tracks.forEach(track => {
+      if (hasSolo && !track.solo) return;
+      if (!hasSolo && track.muted) return;
+      const trackMax = track.notes.reduce((max, note) => Math.max(max, note.startTime + note.duration), 0);
+      if (trackMax > maxDuration) maxDuration = trackMax;
+    });
+
+    if (maxDuration === 0) throw new Error("No notes to render");
+
+    maxDuration += 1.0; // 1 second tail
+    const sampleRate = 44100;
+    const offlineCtx = new (window.OfflineAudioContext || (window as any).webkitOfflineAudioContext)(
+      2, 
+      Math.ceil(sampleRate * maxDuration), 
+      sampleRate
+    );
+
+    if (onProgress) onProgress(10);
+    const offlineInstruments: Map<string, any> = new Map();
+    const activeTracks = tracks.filter(t => hasSolo ? t.solo : !t.muted);
+    const neededInsts = new Set(activeTracks.map(t => instrumentMap[t.instrument]));
+    
+    let loadedCount = 0;
+    for (const name of neededInsts) {
+      const inst = await Soundfont.instrument(offlineCtx, name as any);
+      offlineInstruments.set(name, inst);
+      loadedCount++;
+      if (onProgress) onProgress(10 + (loadedCount / neededInsts.size) * 40); // 10% to 50%
+    }
+
+    activeTracks.forEach(track => {
+      const instName = instrumentMap[track.instrument];
+      const activeInst = offlineInstruments.get(instName);
+      if (!activeInst) return;
+
+      track.notes.forEach(note => {
+        activeInst.play(note.pitch, note.startTime, {
+          duration: note.duration,
+          gain: Math.min(2.0, track.volume * (note.velocity / 127) * 3.0)
+        });
+      });
+    });
+
+    if (onProgress) onProgress(60);
+    
+    // In some browsers offlineCtx rendering doesn't yield to the event loop, 
+    // but startRendering() returns a promise.
+    const renderedBuffer = await offlineCtx.startRendering();
+    if (onProgress) onProgress(100);
+    
+    return renderedBuffer;
+  }
 }
 
 export const synthEngine = new SynthEngine();
