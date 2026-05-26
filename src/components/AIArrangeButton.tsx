@@ -3,6 +3,7 @@ import { Sparkles, Loader2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { generateArrangement } from '../ai/composer';
 import type { InstrumentType } from '../store/useStore';
+import { quantizeNotes } from '../audio/quantizer';
 
 const INSTRUMENT_COLORS: Record<InstrumentType, string> = {
   piano: '#3b82f6',
@@ -32,16 +33,38 @@ export const AIArrangeButton: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const generatedTracks = await generateArrangement(tracks, genre, complexity);
+      // 1. Quantize the user's raw tracks
+      const tempo = useStore.getState().tempo || 120;
+      const quantizedTracks = tracks.map(t => ({
+        ...t,
+        notes: quantizeNotes(t.notes, tempo, 0.25)
+      }));
+
+      // 2. Generate arrangement based on the locked, quantized tracks
+      const generatedTracks = await generateArrangement(quantizedTracks, genre, complexity);
       
-      // Mute the raw original user tracks so they only hear the perfected AI arrangement
+      // 3. Mute the raw original user tracks
       tracks.forEach(track => {
         updateTrack(track.id, { muted: true });
       });
 
-      generatedTracks.forEach((t, i) => {
+      // 4. Inject the Locked Quantized Lead
+      quantizedTracks.forEach(t => {
         addTrack({
-          name: i === 0 ? `Cleaned Lead (${t.instrument})` : `AI ${t.instrument.charAt(0).toUpperCase() + t.instrument.slice(1)}`,
+          name: `Locked Lead (${t.instrument})`,
+          instrument: t.instrument,
+          notes: t.notes,
+          muted: false,
+          solo: false,
+          volume: 0.8,
+          color: INSTRUMENT_COLORS[t.instrument] || '#94a3b8'
+        });
+      });
+
+      // 5. Inject the AI backing tracks
+      generatedTracks.forEach((t) => {
+        addTrack({
+          name: `AI ${t.instrument.charAt(0).toUpperCase() + t.instrument.slice(1)}`,
           instrument: t.instrument,
           notes: t.notes,
           muted: false,

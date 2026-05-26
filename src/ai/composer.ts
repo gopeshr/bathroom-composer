@@ -60,34 +60,34 @@ export const generateArrangement = async (existingTracks: any[], genre?: string,
 
   const prompt = `
 You are an expert, multi-platinum music producer and arranger.
-I am providing you with the current state of a musical project. It consists of an array of tracks, where each track has an instrument and a sequence of MIDI notes. These notes are usually a raw, unquantized, and slightly messy vocal hum from the user.
+I am providing you with the current state of a musical project. It consists of an array of tracks containing the user's Lead Melody. 
 
-Your task is to generate a pristine, professional musical arrangement based on this raw input.
+CRITICAL CONTEXT:
+The user's input tracks have already been mathematically quantized and pitch-corrected. They are the LOCKED LEAD MELODY. Do NOT generate a lead melody track. Your job is ONLY to be the backing band.
+
+Your task is to generate a pristine, professional musical arrangement that supports this lead melody.
 ${genreInstruction}
 ${complexityInstruction}
 
 First, analyze the existing tracks in the "analysis" field. Determine the likely musical key, the implied tempo (BPM), the rhythmic motifs, and the overall mood based on ALL the provided tracks. 
 
-Then, you MUST generate exactly 4 new tracks to build the arrangement. The instruments must be chosen from: 'piano', 'drums', 'guitar', 'flute', 'violin', 'bass', 'synth', 'choir', 'sax', 'trumpet', 'marimba'.
+Then, you MUST generate exactly 3 new tracks to build the arrangement. The instruments must be chosen from: 'piano', 'drums', 'guitar', 'flute', 'violin', 'bass', 'synth', 'choir', 'sax', 'trumpet', 'marimba'.
 
-Track 1: THE CLEANED LEAD
-The user's raw hum is messy. Your first track must be a "Cleaned Lead" (e.g., using 'synth', 'sax', 'flute', 'trumpet', or 'marimba'). This track must play the exact melody the user intended to hum, but mathematically quantized to the beat and perfectly pitch-corrected to the key. This is the most important track.
+Track 1: BASS (Melodic Mirroring)
+A bassline ('bass' or 'synth' playing low notes). The bassline MUST groove-lock with the user's melody. It should mirror the primary rhythmic motifs of the Lead Melody, providing a strong foundation that feels custom-tailored to the user's specific vocal rhythms.
 
-Track 2: BASS (Melodic Mirroring)
-A bassline ('bass' or 'synth' playing low notes). The bassline MUST groove-lock with the user's melody. It should mirror the primary rhythmic motifs of the Cleaned Lead, providing a strong foundation that feels custom-tailored to the user's specific vocal rhythms.
-
-Track 3: CHORDS
+Track 2: CHORDS
 A chord progression ('piano', 'guitar', 'synth', or 'choir' playing chords). The chord changes should happen exactly on the accented notes of the user's hum, providing harmonic glue.
 
-Track 4: DRUMS or COUNTER-MELODY (Call and Response)
-Either a drum beat ('drums' using standard MIDI pitches: 36 Kick, 38 Snare, 42 Closed Hat, 46 Open Hat) where the kick locks with the bass... OR a counter-melody instrument. If you choose a counter-melody, it MUST perform "Call and Response". When the Cleaned Lead pauses or holds a long note, this track plays a quick lick to fill the space.
+Track 3: DRUMS or COUNTER-MELODY (Call and Response)
+Either a drum beat ('drums' using standard MIDI pitches: 36 Kick, 38 Snare, 42 Closed Hat, 46 Open Hat) where the kick locks with the bass... OR a counter-melody instrument. If you choose a counter-melody, it MUST perform "Call and Response". When the Lead Melody pauses or holds a long note, this track plays a quick lick to fill the space.
 
 CRITICAL INSTRUCTION - DYNAMIC VELOCITY MAPPING:
 You MUST strictly mirror the velocities (volume/amplitude) of the user's input tracks in your generated notes. If the user hummed softly (low velocity, e.g., 30-50) at a certain timestamp and swelled to a loud note (high velocity, e.g., 100-127), your arrangement MUST follow that exact dynamic envelope at that exact timestamp. Never use a flat velocity of 100 for all notes. Follow the emotional dynamics of the raw hum exactly.
 
 Return ONLY valid JSON that matches the provided schema.
 
-Existing Tracks Data (Raw User Input):
+Existing Tracks Data (LOCKED Lead Melody):
 ${JSON.stringify(existingTracks.map(t => ({ instrument: t.instrument, notes: t.notes })), null, 2)}
 `;
 
